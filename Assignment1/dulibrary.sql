@@ -1,4 +1,5 @@
 -- (a)
+CREATE DATABASE dulibrary;
 -- creating the first table
 CREATE TABLE libraryBooks (
   AccessionNumber INTEGER PRIMARY KEY,
