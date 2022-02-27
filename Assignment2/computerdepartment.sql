@@ -97,26 +97,62 @@ VALUES('322', 'a104', '56.8', '65.2');
 INSERT INTO acaddetails
 VALUES('145', 'a103', '69.8', '75.3');
 -- @block
-SELECT p.Paper_code,
-    Paper_name,
-    S_Name
-FROM paperdetails p
-    JOIN acaddetails a ON a.Paper_code = p.Paper_code
-    JOIN students s ON s.Roll_No = a.Roll_No
-WHERE Attendace >= 75
-    AND Home_marks >= 60
-    AND p.Paper_name = 'paper 2';
--- @block
 SELECT s.S_Name,
-    a.Roll_No,
-    s.Marks
-FROM students s
-    JOIN acaddetails a ON a.Roll_No = s.Roll_No
-    JOIN paperdetails p ON p.Paper_code = a.Paper_code
-WHERE s.S_Address = 'Delhi'
-    AND a.Home_marks >= 60
-    AND p.Paper_name = 'paper 1';
+    sum(Attendace) AS Attendance,
+    sum(Home_marks) AS Marks
+FROM paperdetails p
+    JOIN acaddetails a ON p.Paper_code = a.Paper_code
+    JOIN Students s ON s.Roll_No = a.Roll_No
+GROUP BY S_Name;
+SELECT s.S_Name,
+    max(Home_marks) AS Marks,
+    p.Paper_code
+FROM paperdetails p
+    JOIN acaddetails a ON p.Paper_code = a.Paper_code
+    JOIN Students s ON s.Roll_No = a.Roll_No
+GROUP BY Paper_name;
 -- @block
-DROP TABLE paperdetails,
-students,
-acaddetails;
+with x as (
+    select Roll_No,
+        sum(Home_marks) as Marks
+    from acaddetails
+    group by acaddetails.Roll_No
+)
+select S_Name
+from Students
+    join (
+        select Roll_No,
+            mt.max_marks max_marks,
+            x.marks marks
+        from (
+                select max(Marks) max_marks
+                from x
+            ) as mt
+            join x on x.marks = mt.max_marks
+    ) rolls on rolls.Roll_No = Students.Roll_No;
+-- @block
+with t1 as (
+    select Roll_No,
+        sum(Home_marks) as marks
+    from acaddetails
+    group by acaddetails.Roll_No
+)
+select S_Name
+from Students
+    join (
+        select Roll_No,
+            mt.avg_marks avg_marks,
+            t1.marks marks
+        from (
+                select avg(marks) avg_marks
+                from t1
+            ) as mt
+            join t1 on t1.marks > mt.avg_marks
+    ) rolls on rolls.Roll_No = Students.Roll_No;
+-- @block
+select sum(Home_marks) total_marks
+from acaddetails
+    join Students s on acaddetails.Roll_No = s.Roll_No
+group by s.Roll_No
+order by total_marks
+limit 5;

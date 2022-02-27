@@ -72,6 +72,7 @@ FROM bicycle b
     JOIN BicycleModel m ON b.ModelNo = m.ModelNo
     JOIN customer c ON c.CustID = b.CustID
 WHERE m.Manufacturer = 'Honda';
+
 SELECT b.BicycleID,
     b.DatePurchased,
     b.Color,
